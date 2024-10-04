@@ -1,0 +1,242 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: "Arial", sans-serif;
+  background-color: #000;
+  color: #f5f5f5;
+  user-select: none;
+  cursor: default;
+}
+
+canvas {
+  display: block;
+}
+
+/* Styling for dat.GUI controls */
+.dg.ac {
+  z-index: 10 !important;
+  color: #f5f5f5 !important;
+}
+
+.dg .property-name {
+  width: 60%;
+}
+
+/* Control Panel Styling */
+#controls {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+}
+
+.control-group {
+  background: rgba(30, 30, 30, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.control-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #ddd;
+}
+
+.control-btn,
+.control-select,
+.control-range {
+  background: rgba(60, 60, 60, 0.8);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.control-range {
+  -webkit-appearance: none;
+  height: 6px;
+  background: #444;
+  outline: none;
+  border-radius: 5px;
+  padding: 0;
+}
+
+.control-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.control-btn:hover,
+.control-select:hover,
+.control-range:hover {
+  background: rgba(90, 90, 90, 0.8);
+}
+
+.control-btn i {
+  font-size: 16px;
+  margin-right: 5px;
+}
+
+/* Day and Date Counter Styling */
+#counters {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  color: #f5f5f5;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+#counters > div {
+  background: rgba(30, 30, 30, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+}
+
+/* Planet Hover Effect */
+.planet-hover:hover {
+  cursor: pointer;
+  filter: brightness(1.2);
+}
+
+/* Website Credit */
+#credit {
+  position: fixed;
+  bottom: 10px;
+  right: 20px;
+  font-size: 12px;
+  color: #777;
+}
+
+/* Preloader Styling */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #181818;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+
+#preloader .loader {
+  border: 5px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 5px solid #3498db;
+  width: 50px;
+  height: 50px;
+  -webkit-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Modal Styling for Draggability and Scrollbar */
+.modal {
+  overflow: hidden; /* Prevent scrollbars on the modal itself */
+}
+
+.modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(40, 40, 40, 0.9);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  cursor: move; /* Indicate draggability */
+}
+
+.modal .modal-header h2 {
+  margin: 0; /* Reset default margin */
+  font-size: 18px;
+  color: #f5f5f5;
+}
+
+.modal .modal-header img {
+  max-width: 50px;
+  max-height: 50px;
+  margin-right: 10px;
+}
+
+.modal .modal-header button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #f5f5f5;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.modal .modal-header button:hover {
+  color: #f00;
+}
+
+.modal .modal-content {
+  padding: 15px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.modal .modal-content p {
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+/* Custom Scrollbar for Modal Content */
+.modal .modal-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal .modal-content::-webkit-scrollbar-track {
+  background: rgba(50, 50, 50, 0.8);
+}
+
+.modal .modal-content::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+/* Tooltip Styling */
+#tooltip {
+  /* Use #tooltip if it's an ID */
+  position: absolute;
+  display: none;
+  padding: 8px;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 5px;
+  pointer-events: none;
+}
