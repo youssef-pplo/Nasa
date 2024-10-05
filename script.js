@@ -308,32 +308,51 @@ function init() {
 }
 function animate() {
   requestAnimationFrame(animate);
+
   if (stats) {
     stats.update();
   }
+
   planets.forEach((planet) => {
     planet.rotation.y += (speedFactor * controlParams.rotationSpeed) / 500;
+
     const angle = planet.orbitSpeed * dayCounter + planet.initialAngle;
-    planet.position.set(
-      planet.orbitDistance * Math.cos(angle),
-      0,
-      planet.orbitDistance * Math.sin(angle)
-    );
+
+    // Calculate initial position based on distance and angle
+    let x = planet.orbitDistance * Math.cos(angle);
+    let z = planet.orbitDistance * Math.sin(angle);
+
+    // Apply Keplerian elements to the planet's position
+    let position = new THREE.Vector3(x, 0, z);
+    if (planet.userData.keplerianElements) {
+      position.applyAxisAngle(new THREE.Vector3(0, 1, 0), planet.userData.keplerianElements.longitudeOfAscendingNode * (Math.PI / 180));
+      position.applyAxisAngle(new THREE.Vector3(1, 0, 0), planet.userData.keplerianElements.inclination * (Math.PI / 180));
+      position.applyAxisAngle(new THREE.Vector3(0, 1, 0), planet.userData.keplerianElements.argumentOfPerihelion * (Math.PI / 180));
+    }
+
+    // Set the adjusted position
+    planet.position.copy(position);
   });
+
   earthGroup.rotation.y += (speedFactor * controlParams.rotationSpeed) / 500;
+
   dayCounter += speedFactor;
+
   document.getElementById("dayCounter").innerText = `Day: ${Math.floor(
     dayCounter
   )}`;
   updateDateCounter(dayCounter);
+
   neoObjects.forEach((neo) => {
-    const angle = neo.orbitSpeed * dayCounter + neo.initialAngle;
+    // Same correction for NEO objects
+    const angle = neo.orbitSpeed * dayCounter + neo.initialAngle; 
     neo.position.set(
       neo.orbitDistance * Math.cos(angle),
       0,
       neo.orbitDistance * Math.sin(angle)
     );
   });
+
   renderer.render(scene, camera);
 }
 function onWindowResize() {
@@ -672,7 +691,14 @@ function createCelestialBody(body) {
         0,
         celestialBody.orbitDistance * Math.sin(angle)
       );
-      createOrbitLine(body.distance);
+
+      // Create Earth's orbit line:
+      if (body.keplerianElements) {
+        createOrbitLine(body.distance, body.keplerianElements.inclination, body.keplerianElements.longitudeOfAscendingNode, body.keplerianElements.argumentOfPerihelion);
+      } else {
+        createOrbitLine(body.distance);
+      }
+
       body.moons.forEach((moonData) => {
         createMoon(celestialBody, moonData);
       });
@@ -693,7 +719,13 @@ function createCelestialBody(body) {
       if (body.name === "Saturn") {
         addSaturnRings(celestialBody);
       }
-      createOrbitLine(body.distance);
+      
+      // Create orbit line for other planets:
+      if (body.keplerianElements) {
+        createOrbitLine(body.distance, body.keplerianElements.inclination, body.keplerianElements.longitudeOfAscendingNode, body.keplerianElements.argumentOfPerihelion, body.radius); 
+      } else {
+        createOrbitLine(body.distance, 0, 0, 0, body.radius); 
+      }
     }
   });
 }
@@ -725,17 +757,31 @@ function createMoon(parentPlanet, moonData) {
     );
   });
 }
-function createOrbitLine(distance) {
+function createOrbitLine(distance, inclination, longitudeOfAscendingNode, argumentOfPerihelion, bodyRadius) {
   const orbitMaterial = new THREE.LineBasicMaterial({
     color: 0x555555,
     opacity: controlParams.orbitVisibility,
     transparent: true,
   });
-  const orbitPoints = generateOrbitPoints(distance, 128);
+
+  const orbitPoints = generateOrbitPoints(distance, 128, inclination, longitudeOfAscendingNode, argumentOfPerihelion);
+
+  // Calculate orbit center offset based on Keplerian elements
+  const orbitCenter = new THREE.Vector3(bodyRadius, 0, 0);
+  orbitCenter.applyAxisAngle(new THREE.Vector3(0, 1, 0), longitudeOfAscendingNode * (Math.PI / 180));
+  orbitCenter.applyAxisAngle(new THREE.Vector3(1, 0, 0), inclination * (Math.PI / 180));
+  orbitCenter.applyAxisAngle(new THREE.Vector3(0, 1, 0), argumentOfPerihelion * (Math.PI / 180));
+
+  // Adjust orbit points based on calculated center
+  orbitPoints.forEach(point => {
+    point.add(orbitCenter);
+  });
+
   const orbitGeometry = new THREE.BufferGeometry().setFromPoints(orbitPoints);
   const orbitLine = new THREE.Line(orbitGeometry, orbitMaterial);
   scene.add(orbitLine);
 }
+
 function addSaturnRings(saturn) {
   const ringGeometry = new THREE.RingGeometry(9, 15, 64);
   const ringMaterial = new THREE.MeshBasicMaterial({
@@ -748,13 +794,28 @@ function addSaturnRings(saturn) {
   ring.rotation.x = Math.PI / 2;
   saturn.add(ring);
 }
-function generateOrbitPoints(radius, segments) {
+function generateOrbitPoints(radius, segments, inclination, longitudeOfAscendingNode, argumentOfPerihelion) {
   const points = [];
   for (let i = 0; i <= segments; i++) {
     const theta = (i / segments) * Math.PI * 2;
-    const x = radius * Math.cos(theta);
-    const z = radius * Math.sin(theta);
-    points.push(new THREE.Vector3(x, 0, z));
+    let x = radius * Math.cos(theta);
+    let z = radius * Math.sin(theta);
+
+    // Apply inclination
+    const y = z * Math.sin(inclination * (Math.PI / 180));
+    z = z * Math.cos(inclination * (Math.PI / 180));
+
+    // Apply longitude of ascending node
+    const xTemp = x;
+    x = xTemp * Math.cos(longitudeOfAscendingNode * (Math.PI / 180)) - z * Math.sin(longitudeOfAscendingNode * (Math.PI / 180));
+    z = xTemp * Math.sin(longitudeOfAscendingNode * (Math.PI / 180)) + z * Math.cos(longitudeOfAscendingNode * (Math.PI / 180));
+
+    // Apply argument of perihelion
+    const xTemp2 = x;
+    x = xTemp2 * Math.cos(argumentOfPerihelion * (Math.PI / 180)) - z * Math.sin(argumentOfPerihelion * (Math.PI / 180));
+    z = xTemp2 * Math.sin(argumentOfPerihelion * (Math.PI / 180)) + z * Math.cos(argumentOfPerihelion * (Math.PI / 180));
+
+    points.push(new THREE.Vector3(x, y, z));
   }
   return points;
 }
